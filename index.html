@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Freezer Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --card: #1E2530;
+      --teal: #1D9E75;
+      --teal-dim: #0D2E22;
+      --teal-border: rgba(29,158,117,0.35);
+      --blue: #2A8A8A;
+      --white: #F0EDE8;
+      --gray: #8B9BAA;
+      --warn: #E8960C;
+      --danger: #E05252;
+      --radius: 16px;
+      --font: 'Lexend', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 0 0 40px;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 52px 20px 20px;
+      background: linear-gradient(180deg, #0a0f14 0%, var(--bg) 100%);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .nfc-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--teal);
+      font-weight: 600;
+    }
+    .header-sub {
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    /* ── Sort bar ── */
+    .sort-bar {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .sort-bar::-webkit-scrollbar { display: none; }
+    .sort-btn {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--teal-border);
+      background: transparent;
+      color: var(--gray);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sort-btn.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #0D1117;
+    }
+
+    /* ── Meal list ── */
+    .meal-list {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .meal-row {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .meal-row:active { background: #252d3a; }
+    .meal-row.warn-soon { border-color: rgba(232,150,12,0.4); }
+    .meal-row.warn-danger { border-color: rgba(224,82,82,0.4); }
+
+    .freshness-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-fresh { background: var(--teal); }
+    .dot-soon  { background: var(--warn); }
+    .dot-exp   { background: var(--danger); }
+
+    .meal-info { flex: 1; min-width: 0; }
+    .meal-name {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meal-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .meta-chip {
+      font-size: 12px;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .meta-chip svg { opacity: 0.7; }
+
+    .days-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-fresh  { background: rgba(29,158,117,0.15); color: var(--teal); }
+    .badge-soon   { background: rgba(232,150,12,0.15); color: var(--warn); }
+    .badge-danger { background: rgba(224,82,82,0.15);  color: var(--danger); }
+
+    .chevron { color: var(--gray); flex-shrink: 0; }
+
+    /* ── Random tag ── */
+    .random-section {
+      padding: 20px 16px 8px;
+    }
+    .random-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: var(--radius);
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .random-btn:active { background: rgba(29,158,117,0.25); }
+
+    /* ── Section label ── */
+    .section-label {
+      padding: 20px 20px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--gray);
+      text-transform: uppercase;
+    }
+
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--gray); }
+    .empty p { margin-top: 8px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>❄️ Freezer</h1>
+    <div class="nfc-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 6l4 4-4 4"/><path d="M5 10h14"/><path d="M19 6l4 4-4 4"/></svg>
+      NFC Ready
+    </div>
+  </div>
+  <p class="header-sub" id="subtitle">Loading meals…</p>
+</div>
+
+<div class="random-section">
+  <a href="random.html" class="random-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+    Surprise Me — Random Meal
+  </a>
+</div>
+
+<div class="sort-bar" id="sortBar">
+  <button class="sort-btn active" data-sort="expiry">Expiring Soon</button>
+  <button class="sort-btn" data-sort="prep">Prep Time</button>
+  <button class="sort-btn" data-sort="cook">Cook Time</button>
+  <button class="sort-btn" data-sort="protein">Protein</button>
+  <button class="sort-btn" data-sort="calories">Calories</button>
+</div>
+
+<p class="section-label">All Meals</p>
+<div class="meal-list" id="mealList">
+  <div class="empty"><p>Loading…</p></div>
+</div>
+
+<script>
+const ICONS = {
+  clock: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  flame: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/></svg>`,
+  muscle:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6.5 6.5c0-1.1.9-2 2-2h7c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2h-7c-1.1 0-2-.9-2-2v-1z"/><path d="M6.5 7.5v9a2 2 0 004 0v-4h3v4a2 2 0 004 0v-9"/></svg>`,
+  snow: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5 5-5-5"/><path d="M17 17l-5-5-5 5"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M7 7l5 5 5-5"/><path d="M7 17l5-5 5 5"/></svg>`,
+  chevron:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`,
+};
+
+let meals = [];
+let sortMode = 'expiry';
+
+function daysLeft(meal) {
+  const frozen = new Date(meal.frozen_date);
+  const expiry = new Date(frozen);
+  expiry.setDate(expiry.getDate() + meal.expiry_weeks * 7);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((expiry - today) / 86400000);
+}
+
+function freshStatus(days) {
+  if (days <= 7)  return 'danger';
+  if (days <= 21) return 'soon';
+  return 'fresh';
+}
+
+function sortMeals(list, mode) {
+  return [...list].sort((a, b) => {
+    if (mode === 'expiry')   return daysLeft(a) - daysLeft(b);
+    if (mode === 'prep')     return a.prep_time_min - b.prep_time_min;
+    if (mode === 'cook')     return a.cook_time_min - b.cook_time_min;
+    if (mode === 'protein')  return b.protein - a.protein;
+    if (mode === 'calories') return a.calories - b.calories;
+    return 0;
+  });
+}
+
+function renderList() {
+  const sorted = sortMeals(meals, sortMode);
+  const list = document.getElementById('mealList');
+
+  if (!sorted.length) {
+    list.innerHTML = `<div class="empty"><p>No meals in freezer.<br>Add entries to meals.json to get started.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = sorted.map(meal => {
+    const days = daysLeft(meal);
+    const status = freshStatus(days);
+    const dotClass = `dot-${status === 'danger' ? 'exp' : status}`;
+    const badgeClass = `badge-${status === 'danger' ? 'danger' : status}`;
+    const rowClass = status === 'danger' ? 'warn-danger' : status === 'soon' ? 'warn-soon' : '';
+    const daysLabel = days <= 0 ? 'Expired' : days === 1 ? '1 day left' : `${days} days left`;
+
+    return `<a href="meal.html?id=${meal.id}" class="meal-row ${rowClass}">
+      <div class="freshness-dot ${dotClass}"></div>
+      <div class="meal-info">
+        <div class="meal-name">${meal.name}</div>
+        <div class="meal-meta">
+          <span class="meta-chip">${ICONS.clock} ${meal.prep_time_min + meal.cook_time_min} min total</span>
+          <span class="meta-chip">${ICONS.muscle} ${meal.protein}g protein</span>
+          <span class="meta-chip">${ICONS.flame} ${meal.calories} cal</span>
+        </div>
+      </div>
+      <span class="days-badge ${badgeClass}">${daysLabel}</span>
+      <span class="chevron">${ICONS.chevron}</span>
+    </a>`;
+  }).join('');
+}
+
+async function init() {
+  try {
+    const res = await fetch('meals.json');
+    meals = await res.json();
+    const expiring = meals.filter(m => daysLeft(m) <= 7).length;
+    const sub = document.getElementById('subtitle');
+    sub.textContent = expiring > 0
+      ? `${meals.length} meals · ⚠️ ${expiring} expiring soon`
+      : `${meals.length} meals in freezer`;
+    renderList();
+  } catch(e) {
+    document.getElementById('mealList').innerHTML =
+      `<div class="empty"><p>Could not load meals.json</p></div>`;
+  }
+}
+
+document.getElementById('sortBar').addEventListener('click', e => {
+  const btn = e.target.closest('.sort-btn');
+  if (!btn) return;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sortMode = btn.dataset.sort;
+  renderList();
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Meal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0D1117;
+      color: #F0EDE8;
+      font-family: 'Lexend', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 3px solid rgba(29,158,117,0.2);
+      border-top-color: #1D9E75;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { font-size: 22px; font-weight: 700; }
+    p  { font-size: 15px; color: #8B9BAA; }
+    .meal-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1D9E75;
+      min-height: 36px;
+    }
+    .back-link {
+      margin-top: 10px;
+      color: #8B9BAA;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .back-link:hover { color: #1D9E75; }
+  </style>
+</head>
+<body>
+  <div class="spinner" id="spinner"></div>
+  <h2>Picking your meal…</h2>
+  <div class="meal-name" id="mealName"></div>
+  <p id="status">Loading freezer…</p>
+  <a href="index.html" class="back-link">← Back to freezer</a>
+
+  <script>
+    async function init() {
+      try {
+        const res = await fetch('meals.json');
+        const meals = await res.json();
+
+        // Prefer meals expiring soonest (within 21 days) for smart random
+        const soon = meals.filter(m => {
+          const frozen = new Date(m.frozen_date);
+          const expiry = new Date(frozen);
+          expiry.setDate(expiry.getDate() + m.expiry_weeks * 7);
+          const days = Math.round((expiry - new Date()) / 86400000);
+          return days > 0 && days <= 21;
+        });
+
+        const pool = soon.length > 0 ? soon : meals;
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+
+        document.getElementById('mealName').textContent = pick.name;
+        document.getElementById('status').textContent = soon.length > 0
+          ? 'Prioritising meals expiring soon…'
+          : 'All meals are fresh — picking randomly…';
+
+        // Brief pause so user sees the pick, then navigate
+        setTimeout(() => {
+          window.location.href = `meal.html?id=${pick.id}`;
+        }, 1200);
+
+      } catch(e) {
+        document.getElementById('status').textContent = 'Could not load meals.json';
+        document.getElementById('spinner').style.display = 'none';
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
