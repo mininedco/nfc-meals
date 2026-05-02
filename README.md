@@ -81,13 +81,4 @@ Copy any existing entry in `meals.json`, change the `id` (no spaces, use hyphens
 
 ---
 
-## Private Repo Options
 
-| Option | Cost | Setup |
-|--------|------|-------|
-| Make repo public | Free | Change in GitHub settings |
-| GitHub Pro + Pages | $4/mo | Upgrade account |
-| Netlify (drag & drop) | Free | Drag project folder to netlify.com/drop |
-| Vercel | Free | Connect GitHub repo |
-
-**Recommended:** Keep repo public (no sensitive data here) or use Netlify free tier.
