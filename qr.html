@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0D1117" />
+  <title>Meal QR Codes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #0D1117;
+      --surface:     #161B22;
+      --card:        #1C2333;
+      --teal:        #1D9E75;
+      --teal-dim:    rgba(29,158,117,0.10);
+      --teal-border: rgba(29,158,117,0.28);
+      --white:       #EFF1F5;
+      --white-dim:   rgba(239,241,245,0.55);
+      --gray:        #7A8899;
+      --warn:        #E8960C;
+      --font:        'Lexend', system-ui, sans-serif;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .page-sub {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-print {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      background: var(--teal);
+      border: none;
+      border-radius: 10px;
+      color: #0D1117;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 16px;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: 10px;
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* ── Filter tabs ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      padding: 14px 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-tab {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--white-dim);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-tab.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #0D1117;
+    }
+
+    /* ── Grid ── */
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      padding: 8px 24px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── QR Card ── */
+    .qr-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .qr-card:hover {
+      border-color: var(--teal-border);
+      box-shadow: 0 0 20px rgba(29,158,117,0.12);
+    }
+    .qr-card.special {
+      border-color: var(--teal-border);
+      background: var(--teal-dim);
+    }
+    .qr-img-wrap {
+      background: #0D1117;
+      border-radius: 10px;
+      padding: 4px;
+      border: 1px solid rgba(29,158,117,0.20);
+    }
+    .qr-img-wrap img {
+      display: block;
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+    }
+    .qr-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .qr-category {
+      font-size: 11px;
+      color: var(--gray);
+      font-weight: 500;
+    }
+    .qr-open-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      background: var(--teal-dim);
+      border: 1px solid var(--teal-border);
+      border-radius: 8px;
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: 2px;
+    }
+    .qr-card.special .qr-open-btn {
+      background: var(--teal);
+      color: #0D1117;
+      border-color: var(--teal);
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      padding: 16px 24px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      body { background: white; color: black; }
+      .page-header, .filter-bar, .btn-print, .btn-back, .qr-open-btn { display: none !important; }
+      .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0; }
+      .qr-card { border: 1px solid #ccc; background: white; break-inside: avoid; }
+      .qr-name { color: black; }
+      .qr-category { color: #666; }
+      .qr-img-wrap { background: white; border: 1px solid #eee; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <p class="page-title">QR Code Sheet</p>
+    <p class="page-sub">All 26 meal cards — scan to open, print to stick</p>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Freezer
+    </a>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print All
+    </button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-tab active" onclick="filterCards('all', this)">All (26)</button>
+  <button class="filter-tab" onclick="filterCards('special', this)">Special</button>
+  <button class="filter-tab" onclick="filterCards('beef', this)">Beef</button>
+  <button class="filter-tab" onclick="filterCards('thai', this)">Thai</button>
+  <button class="filter-tab" onclick="filterCards('korean', this)">Korean</button>
+  <button class="filter-tab" onclick="filterCards('japanese', this)">Japanese</button>
+  <button class="filter-tab" onclick="filterCards('pasta', this)">Pasta</button>
+  <button class="filter-tab" onclick="filterCards('veggie', this)">Veggie</button>
+  <button class="filter-tab" onclick="filterCards('dessert', this)">Dessert</button>
+</div>
+
+<div class="section-header">Special Tags</div>
+<div class="qr-grid" id="qrGrid">
+
+  <!-- Special pages -->
+  <a class="qr-card special" href="index.html" data-tags="special" data-name="Freezer Dashboard">
+    <div class="qr-img-wrap"><img src="qr/qr_dashboard.png" alt="Dashboard QR" /></div>
+    <p class="qr-name">Freezer Dashboard</p>
+    <p class="qr-category">All meals · sorted by expiry</p>
+    <span class="qr-open-btn">Open Dashboard →</span>
+  </a>
+
+  <a class="qr-card special" href="random.html" data-tags="special" data-name="Surprise Meal">
+    <div class="qr-img-wrap"><img src="qr/qr_surprise.png" alt="Surprise QR" /></div>
+    <p class="qr-name">Surprise Meal</p>
+    <p class="qr-category">Random pick · expiry priority</p>
+    <span class="qr-open-btn">Open Surprise →</span>
+  </a>
+
+</div>
+
+<div class="section-header" id="mealsHeader">Meal Cards</div>
+<div class="qr-grid" id="mealsGrid">
+  <!-- Populated by JS from meals.json -->
+</div>
+
+<script>
+const BASE = 'meal.html?id=';
+
+// Category tag mapping
+const TAGS = {
+  bulgogi:          'beef korean',
+  'beef-snowpeas':  'beef',
+  'bo-luc-lac':     'beef vietnamese',
+  'broccoli-beef':  'beef',
+  'tomato-beef':    'beef',
+  'mongolian-beef': 'beef',
+  grapow:           'thai',
+  'gra-tiem':       'thai',
+  'mapo-tofu':      'chinese',
+  'green-curry':    'thai',
+  'thai-curry':     'thai',
+  'tom-kha':        'thai',
+  'tom-yum':        'thai',
+  soondubu:         'korean',
+  'thai-cabbage':   'thai veggie',
+  'mixed-veg-stirfry': 'veggie',
+  'zucchini':       'veggie',
+  'pumpkin-puree':  'veggie',
+  'pot-pie':        'comfort',
+  alfredo:          'pasta',
+  mentaiko:         'pasta japanese',
+  'japanese-curry': 'japanese',
+  'berry-cheesecake':'dessert',
+  'mango-coconut':  'dessert',
+  'banana-bread':   'dessert',
+  'pumpkin-cheesecake':'dessert',
+};
+
+async function init() {
+  const meals = await fetch('meals.json').then(r => r.json());
+  const grid  = document.getElementById('mealsGrid');
+
+  grid.innerHTML = meals.map(m => {
+    const tags = TAGS[m.id] || '';
+    return `
+      <a class="qr-card" href="${BASE}${m.id}" data-tags="${tags}" data-name="${m.name}">
+        <div class="qr-img-wrap">
+          <img src="qr/qr_${m.id}.png" alt="${m.name} QR" loading="lazy" />
+        </div>
+        <p class="qr-name">${m.name}</p>
+        <p class="qr-category">${m.category}</p>
+        <span class="qr-open-btn">Open Card →</span>
+      </a>`;
+  }).join('');
+}
+
+function filterCards(tag, btn) {
+  // Update active tab
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Filter both grids
+  document.querySelectorAll('.qr-card').forEach(card => {
+    if (tag === 'all') {
+      card.style.display = '';
+    } else {
+      const cardTags = card.dataset.tags || '';
+      card.style.display = cardTags.includes(tag) ? '' : 'none';
+    }
+  });
+
+  // Show/hide section headers
+  const specialSection = document.getElementById('qrGrid');
+  const mealsSection   = document.getElementById('mealsGrid');
+  const specialHeader  = specialSection.previousElementSibling;
+  const mealsHeader    = document.getElementById('mealsHeader');
+
+  const anySpecialVisible = [...specialSection.querySelectorAll('.qr-card')].some(c => c.style.display !== 'none');
+  const anyMealsVisible   = [...mealsSection.querySelectorAll('.qr-card')].some(c => c.style.display !== 'none');
+
+  specialHeader.style.display = anySpecialVisible ? '' : 'none';
+  mealsHeader.style.display   = anyMealsVisible   ? '' : 'none';
+}
+
+init();
+</script>
+</body>
+</html>
