@@ -431,6 +431,73 @@
       flex-shrink: 0;
     }
 
+    /* ─── NFC WRITE BUTTON ────────────────────── */
+    .nfc-write-section {
+      padding: 0 18px 8px;
+    }
+    .nfc-write-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal-border);
+      border-radius: var(--radius-md);
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .nfc-write-btn:active { background: rgba(29,158,117,0.22); }
+    .nfc-write-btn.writing {
+      background: rgba(29,158,117,0.08);
+      border-color: var(--teal);
+      animation: pulse-border 1.2s ease-in-out infinite;
+    }
+    .nfc-write-btn.success {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #0D1117;
+    }
+    .nfc-write-btn.error {
+      background: var(--danger-dim);
+      border-color: rgba(224,82,82,0.40);
+      color: var(--danger);
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--teal-border); }
+      50%       { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
+    }
+    .nfc-hint {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--gray);
+      margin-top: 7px;
+      font-weight: 500;
+    }
+    .nfc-unsupported {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      background: rgba(122,136,153,0.08);
+      border: 1px solid rgba(122,136,153,0.18);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 500;
+    }
+
     /* ─── LOADING / ERROR ───────────────────────── */
     .loading {
       text-align: center;
@@ -483,6 +550,12 @@ const I = {
   flame:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/></svg>`,
   muscle: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6.5 6.5c0-1.1.9-2 2-2h7c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2h-7c-1.1 0-2-.9-2-2v-1z"/><path d="M6.5 7.5v9a2 2 0 004 0v-4h3v4a2 2 0 004 0v-9"/></svg>`,
   snow:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5 5-5-5"/><path d="M17 17l-5-5-5 5"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M7 7l5 5 5-5"/><path d="M7 17l5-5 5 5"/></svg>`,
+
+  /* nfc write */
+  nfcwrite: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 6l4 4-4 4"/><path d="M5 10h14"/><path d="M19 6l4 4-4 4"/><circle cx="19" cy="5" r="3" fill="currentColor" stroke="none"/></svg>`,
+  nfccheck:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+  nfcerr:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  nfcspin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>`,
 
   /* ui chrome */
   back:    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>`,
@@ -669,6 +742,10 @@ function render(meal) {
       </div>
     </div>` : '';
 
+  /* NFC Write section */
+  const tagUrl = `${location.origin}${location.pathname}?id=${meal.id}`;
+  const nfcSectionHTML = buildNfcSection(tagUrl);
+
   return `
     ${bannerHTML}
     <nav class="top-nav">
@@ -680,12 +757,97 @@ function render(meal) {
       <span class="category-pill">${meal.category}</span>
     </div>
     ${chipsHTML}
+    ${nfcSectionHTML}
     ${reheatHTML}
     ${freshHTML}
     ${freshnessHTML}
     ${notesHTML}
     ${ingredientsHTML}
   `;
+}
+
+/* ── NFC Write UI ── */
+function buildNfcSection(tagUrl) {
+  const supported = 'NDEFReader' in window;
+  if (!supported) {
+    return `
+      <div class="nfc-write-section">
+        <div class="nfc-unsupported">
+          ${I.nfc} Write NFC tag — requires Chrome on Android
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="nfc-write-section">
+      <button class="nfc-write-btn" id="nfcWriteBtn" onclick="startNfcWrite('${tagUrl}')">
+        ${I.nfcwrite} Write NFC Tag
+      </button>
+      <p class="nfc-hint" id="nfcHint">Programs a blank NTAG213 tag with this meal's URL</p>
+    </div>`;
+}
+
+async function startNfcWrite(tagUrl) {
+  const btn  = document.getElementById('nfcWriteBtn');
+  const hint = document.getElementById('nfcHint');
+  if (!btn) return;
+
+  // Guard: already writing
+  if (btn.dataset.writing === 'true') return;
+  btn.dataset.writing = 'true';
+
+  // Writing state
+  btn.className = 'nfc-write-btn writing';
+  btn.innerHTML = `${I.nfcspin} Hold tag to back of phone…`;
+  hint.textContent = 'Keep the tag still until confirmed';
+
+  try {
+    const ndef = new NDEFReader();
+    // Timeout after 30s
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    await ndef.write(
+      { records: [{ recordType: 'url', data: tagUrl }] },
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+
+    // Success state
+    btn.className = 'nfc-write-btn success';
+    btn.innerHTML = `${I.nfccheck} Tag written successfully!`;
+    hint.textContent = tagUrl;
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+    // Reset after 4s
+    setTimeout(() => {
+      btn.className = 'nfc-write-btn';
+      btn.innerHTML = `${I.nfcwrite} Write NFC Tag`;
+      hint.textContent = 'Programs a blank NTAG213 tag with this meal\'s URL';
+      btn.dataset.writing = 'false';
+    }, 4000);
+
+  } catch (err) {
+    btn.dataset.writing = 'false';
+    if (err.name === 'AbortError') {
+      btn.className = 'nfc-write-btn error';
+      btn.innerHTML = `${I.nfcerr} Timed out — try again`;
+      hint.textContent = 'No tag detected within 30 seconds';
+    } else if (err.name === 'NotAllowedError') {
+      btn.className = 'nfc-write-btn error';
+      btn.innerHTML = `${I.nfcerr} Permission denied`;
+      hint.textContent = 'Allow NFC access when prompted';
+    } else {
+      btn.className = 'nfc-write-btn error';
+      btn.innerHTML = `${I.nfcerr} Write failed — try again`;
+      hint.textContent = err.message || 'Unknown error';
+    }
+    // Reset after 5s
+    setTimeout(() => {
+      btn.className = 'nfc-write-btn';
+      btn.innerHTML = `${I.nfcwrite} Write NFC Tag`;
+      hint.textContent = 'Programs a blank NTAG213 tag with this meal\'s URL';
+    }, 5000);
+  }
 }
 
 function toggleCollapse(toggle) {
