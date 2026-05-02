@@ -31,21 +31,6 @@ A dyslexia-friendly, dark-mode meal card web app. Scan an NFC tag → see your m
 | `bo-luc-lac` | Bò Lúc Lắc |
 | `pot-pie` | Chicken Pot Pie Filling |
 
----
-
-## Enabling GitHub Pages
-
-1. Go to your repo → **Settings** → **Pages**
-2. Source: **Deploy from a branch**
-3. Branch: `main` / `(root)`
-4. Click **Save**
-5. Wait ~60 seconds → your site is live
-
-> **Does private repo break NFC access?**
-> **Yes — GitHub Pages on private repos requires GitHub Pro ($4/mo).**
-> Free GitHub accounts: repo must be **public** for Pages to work.
-> The app contains no personal data — just recipe instructions — so public is safe.
-> Alternative: keep repo private and use [Netlify](https://netlify.com) (free, works with private repos via drag-and-drop deploy).
 
 ---
 
